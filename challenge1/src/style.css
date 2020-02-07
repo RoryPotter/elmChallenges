@@ -1,0 +1,24 @@
+body {
+  color: #333;
+  background: #fff;
+  font-size: 16px;
+  line-height: 1.4em;
+  margin: 0;
+}
+
+#app {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.left {
+  background-color: #fff;
+  color: #333;
+}
+
+.right {
+  background-color: #333;
+  color: #fff
+}
