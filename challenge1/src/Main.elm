@@ -1,8 +1,10 @@
 module Main exposing (main)
 
 import Browser
+import Browser.Events exposing (onMouseMove)
 import Html exposing (Html, div, h1, text)
 import Html.Attributes exposing (classList, id)
+import Json.Decode as Decode
 
 
 
@@ -28,14 +30,24 @@ init _ =
 
 
 type Msg
-    = NoOp
+    = Side Float
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
+update msg _ =
     case msg of
-        NoOp ->
-            ( model, Cmd.none )
+        Side fraction ->
+            let
+                newModel =
+                    if fraction > 0.5 then
+                        Right
+
+                    else
+                        Left
+            in
+            ( newModel
+            , Cmd.none
+            )
 
 
 
@@ -69,7 +81,14 @@ view model =
 
 subscriptions : Model -> Sub Msg
 subscriptions _ =
-    Sub.none
+    onMouseMove (Decode.map Side decodeFraction)
+
+
+decodeFraction : Decode.Decoder Float
+decodeFraction =
+    Decode.map2 (/)
+        (Decode.field "pageX" Decode.float)
+        (Decode.at [ "currentTarget", "defaultView", "innerWidth" ] Decode.float)
 
 
 
