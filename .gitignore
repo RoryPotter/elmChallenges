@@ -6,3 +6,6 @@ repl-temp-*
 # Built resources
 .cache
 dist
+
+# Javascript
+node_modules

@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "description": "Solution to elmChallenge 1",
+  "description": "Solution to elmChallenge 2",
   "main": "index.js",
   "scripts": {
     "start": "parcel src/index.html",
