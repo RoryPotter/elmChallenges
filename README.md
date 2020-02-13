@@ -12,8 +12,15 @@ The program will print "Right" in the middle of the screen if the mouse cursor i
 
 Try to add different background and foreground colors as well :) also, resizing the browser window should not break the application.
 
-## In Progress
-
 ### Challenge No. 2
 
 Write a program that fills the screen with small blue circles, produced (pseudo) randomly and over time (choose how much time to wait between generating a new circle).
+
+## In Progress
+
+### Challenge No. 3
+
+Add two new abilities:
+
+1. When the 'Space' key on the keyboard is pressed, pause the generation of new circles and when pressed again, resume.
+2. when the 'R' key on the keyboard is pressed, reset and start the animation from the beginning.
