@@ -1,12 +1,14 @@
 module Main exposing (main)
 
 import Browser
+import Browser.Events exposing (onKeyPress)
 import Color
-import Html exposing (Html)
+import Html exposing (Html, header, main_, p, text)
+import Json.Decode as Decode
 import Random
 import Time
-import TypedSvg exposing (circle, svg)
-import TypedSvg.Attributes exposing (cx, cy, fill, preserveAspectRatio, r, viewBox)
+import TypedSvg exposing (circle, svg, text_)
+import TypedSvg.Attributes exposing (cx, cy, fill, preserveAspectRatio, r, viewBox, x, y)
 import TypedSvg.Core exposing (Svg)
 import TypedSvg.Types exposing (Align(..), MeetOrSlice(..), Paint(..), Scale(..), num)
 
@@ -31,6 +33,7 @@ main =
 
 type alias Model =
     { points : List Point
+    , paused : Bool
     }
 
 
@@ -48,10 +51,16 @@ type alias Y =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { points = []
-      }
+    ( emptyModel
     , Cmd.none
     )
+
+
+emptyModel : Model
+emptyModel =
+    { points = []
+    , paused = False
+    }
 
 
 
@@ -61,6 +70,8 @@ init _ =
 type Msg
     = Tick Time.Posix
     | NewPoint ( X, Y )
+    | Pause Bool
+    | Reset
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -75,6 +86,14 @@ update msg model =
             ( { model | points = model.points ++ [ ( x, y ) ] }
             , Cmd.none
             )
+
+        Pause bool ->
+            ( { model | paused = bool }
+            , Cmd.none
+            )
+
+        Reset ->
+            ( emptyModel, Cmd.none )
 
 
 position : Random.Generator ( X, Y )
@@ -97,8 +116,42 @@ yPosition =
 
 
 subscriptions : Model -> Sub Msg
-subscriptions _ =
-    Time.every 2000 Tick
+subscriptions model =
+    let
+        subs =
+            onKeyPressed model.paused
+                :: (if model.paused then
+                        []
+
+                    else
+                        [ Time.every 1000 Tick ]
+                   )
+    in
+    Sub.batch subs
+
+
+onKeyPressed : Bool -> Sub Msg
+onKeyPressed pausedStatus =
+    onKeyPress
+        (keyDecoder
+            |> Decode.andThen
+                (\key ->
+                    case key of
+                        " " ->
+                            Decode.succeed <| Pause (not pausedStatus)
+
+                        "r" ->
+                            Decode.succeed <| Reset
+
+                        _ ->
+                            Decode.fail ""
+                )
+        )
+
+
+keyDecoder : Decode.Decoder String
+keyDecoder =
+    Decode.field "key" Decode.string
 
 
 
@@ -112,11 +165,22 @@ circleRadius =
 
 view : Model -> Html Msg
 view model =
-    svg [ viewBox 0 0 200 100, preserveAspectRatio (Align ScaleMid ScaleMid) Meet ]
-        (List.map
-            (\( x, y ) -> viewCircle circleRadius x y)
-            model.points
-        )
+    main_ []
+        [ header []
+            [ p [] [ text "Press the 'Space' key to pause. Press the 'r' key to reset." ]
+            ]
+        , svg [ viewBox 0 0 200 100, preserveAspectRatio (Align ScaleMid ScaleMid) Meet ]
+            (List.map
+                (\( x, y ) -> viewCircle circleRadius x y)
+                model.points
+                ++ (if model.paused then
+                        [ text_ [ x (num 90), y (num 50) ] [ text "Paused" ] ]
+
+                    else
+                        []
+                   )
+            )
+        ]
 
 
 viewCircle : Float -> Float -> Float -> Svg Msg
